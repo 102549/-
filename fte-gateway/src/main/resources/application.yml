@@ -1,0 +1,84 @@
+server:
+  port: 10002 # 网关端口
+#  forward-headers-strategy: framework
+spring:
+  application:
+    name: "gateway" # 服务名称
+  zipkin:
+    base-url: http://localhost:9411/ # zipkin server 的请求地址
+    discovery-client-enabled: false  # 让 Nacos 把它当成一个 url ，而不要当成服务名
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: 'http://localhost:10003/rsa/publicKey' #配置RSA的公钥访问地址
+    redis:
+      database: 0
+      port: 6379
+      host: localhost
+      password: 123456
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+        server-addr: localhost:8848 # nacos地址
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true #使用小写service-id
+      routes: # 网关路由配置
+        - id: auth-service
+          uri: http://localhost:10003
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth/(?<segment>.*),/$\{segment}
+        - id: user-service
+          uri: http://localhost:8079
+          predicates:
+            - Path=/user/**
+            - Path=/user-auth/**
+            - Path=/courses/**
+            - Path=/classes/**
+          filters:
+            - StripPrefix=1
+        - id: exam-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/exam/**
+          filters:
+            - StripPrefix=1
+        - id: message-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/message/**
+          filters:
+            - StripPrefix=1
+        - id: message-socket
+          uri: "lb:ws://exam-message"
+          predicates:
+            - Path=/exam-message/socket
+          filters:
+            - StripPrefix=1
+springdoc:
+  swagger-ui:
+    use-root-path: true
+    path: scholl
+secure:
+  ignore:
+    urls: #配置白名单路径
+      - "/exam-user/public/**"
+      - "/doc.html"
+      - "/*/v3/api-docs/**"
+      - "/v3/api-docs/**"
+      - "/*/*.js"
+      - "/*/*.css"
+      - "/*/*.png"
+      - "/*/*.ico"
+      - "/webjars/**"
+      - "/auth/oauth/token"
+      - "/auth/oauth/token/**"
+      - "/oauth/token"
+      - "/oauth/token/**"
+
