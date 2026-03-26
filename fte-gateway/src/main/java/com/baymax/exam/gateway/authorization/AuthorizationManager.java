@@ -89,6 +89,72 @@ public class AuthorizationManager implements ReactiveAuthorizationManager<Author
             e.printStackTrace();
             return Mono.just(new AuthorizationDecision(false));
         }
+        
+        // 基于角色的权限验证
+        try {
+            String token = request.getHeaders().getFirst(SecurityConstants.JWT_TOKEN_HEADER);
+            if(token==null){
+                token=request.getQueryParams().getFirst("token");
+            }
+            if(StrUtil.isEmpty(token)){
+                return Mono.just(new AuthorizationDecision(false));
+            }
+            String realToken = token.replace(SecurityConstants.JWT_TOKEN_PREFIX, "");
+            JWSObject jwsObject = JWSObject.parse(realToken);
+            String userStr = jwsObject.getPayload().toString();
+            LoginUser loginUser= JSONUtil.toBean(userStr,LoginUser.class);
+            
+            // 获取用户角色
+            List<String> roles = loginUser.getRoles();
+            if (roles == null || roles.isEmpty()) {
+                return Mono.just(new AuthorizationDecision(false));
+            }
+            
+            String path = uri.getPath();
+            
+            // 用户管理API：只有ADMIN可以访问
+            if (pathMatcher.match("/user/list", path) || 
+                pathMatcher.match("/user/delete/**", path) || 
+                pathMatcher.match("/user/resetPassword/**", path)) {
+                if (!roles.contains("ROLE_ADMIN")) {
+                    log.warn("非管理员尝试访问用户管理API: {}, 用户角色: {}", path, roles);
+                    return Mono.just(new AuthorizationDecision(false));
+                }
+            }
+            
+            // 考试管理API：只有TEACHER和ADMIN可以访问
+            if (pathMatcher.match("/exam-info/update", path) || 
+                pathMatcher.match("/exam-info/delete/**", path) ||
+                pathMatcher.match("/question/add", path) ||
+                pathMatcher.match("/question/update", path) ||
+                pathMatcher.match("/question/delete/**", path)) {
+                if (!roles.contains("ROLE_TEACHER") && !roles.contains("ROLE_ADMIN")) {
+                    log.warn("非教师/管理员尝试访问考试管理API: {}, 用户角色: {}", path, roles);
+                    return Mono.just(new AuthorizationDecision(false));
+                }
+            }
+            
+            // 学生只能访问学生相关的API
+            if (roles.contains("ROLE_STUDENT") && !roles.contains("ROLE_TEACHER") && !roles.contains("ROLE_ADMIN")) {
+                // 学生不能访问管理API
+                if (pathMatcher.match("/user/list", path) || 
+                    pathMatcher.match("/user/delete/**", path) || 
+                    pathMatcher.match("/user/resetPassword/**", path) ||
+                    pathMatcher.match("/exam-info/update", path) || 
+                    pathMatcher.match("/exam-info/delete/**", path) ||
+                    pathMatcher.match("/question/add", path) ||
+                    pathMatcher.match("/question/update", path) ||
+                    pathMatcher.match("/question/delete/**", path)) {
+                    log.warn("学生尝试访问管理API: {}, 用户角色: {}", path, roles);
+                    return Mono.just(new AuthorizationDecision(false));
+                }
+            }
+            
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return Mono.just(new AuthorizationDecision(false));
+        }
+        
         //非管理端路径直接放行
         if (!pathMatcher.match("/exam-auth/**", uri.getPath())) {
             final long eTime = System.currentTimeMillis();

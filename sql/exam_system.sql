@@ -421,7 +421,7 @@ CREATE TABLE `es_user`  (
   `picture` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '头像',
   `phone` char(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '手机号',
   `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '邮箱',
-  `role` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0' COMMENT '角色：0学生、1教师',
+  `role` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0' COMMENT '角色：0学生、1教师、2管理员',
   `enable` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：0启用，>0封禁',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -432,7 +432,7 @@ CREATE TABLE `es_user`  (
 -- ----------------------------
 -- Records of es_user
 -- ----------------------------
-INSERT INTO `es_user` VALUES (1, 'admin', '管理员', '123456', NULL, NULL, NULL, '1', 1, '2026-03-23 15:28:27', '2026-03-23 15:28:27');
+INSERT INTO `es_user` VALUES (1, 'admin', '管理员', '123456', NULL, NULL, NULL, '2', 1, '2026-03-23 15:28:27', '2026-03-23 15:28:27');
 INSERT INTO `es_user` VALUES (201, 'teacher', '教师账户', '123456', NULL, NULL, NULL, '1', 1, '2026-03-23 15:28:27', '2026-03-23 15:28:27');
 INSERT INTO `es_user` VALUES (202, 'student001', '张三', '123456', NULL, NULL, NULL, '0', 1, '2026-03-23 15:28:27', '2026-03-23 15:28:27');
 INSERT INTO `es_user` VALUES (203, 'student002', '李四', '123456', NULL, NULL, NULL, '0', 1, '2026-03-23 15:28:27', '2026-03-23 15:28:27');

@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -74,6 +75,7 @@ public class UserController {
     }
     @Operation(summary = "获取用户信息")
     @PostMapping("/update")
+    @PreAuthorize("hasRole('ADMIN') or #user.id == null or #user.id == authentication.principal.id")
     Result updateUser(@RequestBody @Validated({User.UpdateUserRequestValid.class}) User user){
         if(user.getId() != null){
             User existingUser = userService.getById(user.getId());
@@ -123,6 +125,7 @@ public class UserController {
     }
 
     @Operation(summary = "获取用户列表")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/list")
     Result<List<User>> getUserList(
             @RequestParam(required = false) String keyword,
@@ -141,6 +144,7 @@ public class UserController {
 
     @Inner
     @Operation(summary = "删除用户")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/delete/{id}")
     Result deleteUser(@PathVariable Integer id){
         userService.removeById(id);
@@ -149,6 +153,7 @@ public class UserController {
 
     @Inner
     @Operation(summary = "重置密码")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/resetPassword/{id}")
     Result resetPassword(@PathVariable Integer id){
         userService.updatePassword(id, "123456");

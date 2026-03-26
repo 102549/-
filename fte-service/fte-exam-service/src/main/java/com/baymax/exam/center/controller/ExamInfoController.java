@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,6 +78,7 @@ public class ExamInfoController {
     ClassesClient classesClient;
 
     @Operation(summary = "发布考试信息")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @PostMapping("/update")
     public Result update(@RequestBody @Validated ExamInfoVo examInfoVo){
         ExamInfo examInfo=examInfoVo.getExamInfo();
@@ -182,6 +184,7 @@ public class ExamInfoController {
     }
 
     @Operation(summary = "删除考试")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @PostMapping("/delete/{examInfoId}")
     public Result delete(@PathVariable Integer examInfoId){
         ExamInfo examInfo = examInfoService.getById(examInfoId);
@@ -194,6 +197,7 @@ public class ExamInfoController {
     }
 
     @Operation(summary = "获取考试列表")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/list/{courseId}")
     public Result list(@PathVariable Integer courseId,
                        @Schema(description = "0:全部、1：未开始、2：进行中、3：结束")

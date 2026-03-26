@@ -20,6 +20,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author ：Baymax
@@ -65,7 +67,24 @@ public class UserServiceImpl implements UserDetailsService {
                 loginUser.setUsername(user.getUsername());
                 loginUser.setPassword(user.getPassword());
                 loginUser.setId(user.getId());
-                loginUser.setRoles(new ArrayList<>());
+                // 根据用户角色设置角色列表
+                List<String> roles = new ArrayList<>();
+                if (user.getRole() != null) {
+                    switch (user.getRole()) {
+                        case "2": // 管理员
+                            roles.add("ROLE_ADMIN");
+                            break;
+                        case "1": // 教师
+                            roles.add("ROLE_TEACHER");
+                            break;
+                        case "0": // 学生
+                            roles.add("ROLE_STUDENT");
+                            break;
+                        default:
+                            roles.add("ROLE_STUDENT"); // 默认学生角色
+                    }
+                }
+                loginUser.setRoles(roles);
                 loginUser.setEnabled(user.getEnable());
             }
         } catch (Exception e) {
@@ -79,7 +98,7 @@ public class UserServiceImpl implements UserDetailsService {
             loginUser.setUsername("teacher");
             loginUser.setPassword("123456");
             loginUser.setId(201);
-            loginUser.setRoles(new ArrayList<>());
+            loginUser.setRoles(Arrays.asList("ROLE_TEACHER"));
             loginUser.setEnabled(true);
         }
 
@@ -89,7 +108,7 @@ public class UserServiceImpl implements UserDetailsService {
             loginUser.setUsername("admin");
             loginUser.setPassword("123456");
             loginUser.setId(1);
-            loginUser.setRoles(new ArrayList<>());
+            loginUser.setRoles(Arrays.asList("ROLE_ADMIN"));
             loginUser.setEnabled(true);
         }
         if (loginUser == null && "student".equals(username)) {  // ✅ 添加学生测试账号
@@ -97,7 +116,7 @@ public class UserServiceImpl implements UserDetailsService {
             loginUser.setUsername("student");
             loginUser.setPassword("123456");
             loginUser.setId(301);
-            loginUser.setRoles(new ArrayList<>());  // 学生可能需要不同角色
+            loginUser.setRoles(Arrays.asList("ROLE_STUDENT"));  // 学生角色
             loginUser.setEnabled(true);
         }
 

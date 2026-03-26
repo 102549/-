@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +50,7 @@ public class QuestionController {
     @Autowired
     CourseClient courseClient;
     @Operation(summary = "创建题目")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @PostMapping("/add")
     public Result add(@RequestBody @Validated QuestionInfoVo questionInfo){
         //判断课程是不是自己的
@@ -67,6 +69,7 @@ public class QuestionController {
         }
     }
     @Operation(summary = "批量创建题目")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @PostMapping("/batchAdd")
     public Result batchAdd(@RequestBody @Validated BatchQuestion batchQuestion){
         Courses course = courseClient.findCourse(batchQuestion.getCourseId());
@@ -110,6 +113,7 @@ public class QuestionController {
     }
 
     @Operation(summary = "更新题目")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @PostMapping("/update")
     public Result update(@RequestBody Question question){
         //判断题目是不是自己的
@@ -124,6 +128,7 @@ public class QuestionController {
         return Result.msgSuccess("更新成功");
     }
     @Operation(summary = "删除题目")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @PostMapping("/delete/{questionId}")
     public Result delete(@PathVariable String questionId){
         //判断题目是不是自己的
@@ -136,6 +141,7 @@ public class QuestionController {
         return Result.msgSuccess("删除成功");
     }
     @Operation(summary = "题目列表")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/list/{courseId}")
     public Result list(
             @PathVariable Integer courseId,
